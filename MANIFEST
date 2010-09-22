@@ -1,0 +1,15 @@
+Changes
+lib/CyberSource/SOAP/Lite.pm
+lib/CyberSource/SOAP/Lite/BillTo.pm
+lib/CyberSource/SOAP/Lite/Card.pm
+lib/CyberSource/SOAP/Lite/Item.pm
+lib/CyberSource/SOAP/Lite/PurchaseTotals.pm
+lib/CyberSource/SOAP/Lite/RequestRole.pm
+lib/CyberSource/SOAP/Lite/ShipTo.pm
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+t/00_compile.t
+t/client.t
+t/other_stuff.t

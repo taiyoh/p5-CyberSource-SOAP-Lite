@@ -2,7 +2,9 @@ use inc::Module::Install;
 name 'CyberSource-SOAP-Lite';
 all_from 'lib/CyberSource/SOAP/Lite.pm';
 
-# requires '';
+requires 'Any::Moose';
+requires 'Mouse';
+requires 'SOAP::Lite';
 
 tests 't/*.t';
 author_tests 'xt';

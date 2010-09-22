@@ -5,7 +5,7 @@ use utf8;
 
 use SOAP::Lite;
 
-our $VERSION = '0.02';
+our $VERSION = '0.02.1';
 
 has logging         => ( is => 'rw', isa => 'CodeRef' );
 
@@ -211,15 +211,77 @@ __END__
 
 =head1 NAME
 
-CyberSource::SOAP::Lite -
+CyberSource::SOAP::Lite
 
 =head1 SYNOPSIS
 
   use CyberSource::SOAP::Lite;
+  # see t/client.t
+
+  use constant MERCHANT_ID      => ''; # fix this
+  use constant TRANSACTION_KEY  => ''; # fix this
+
+  use constant ACCOUNT_NUMBER   => '';
+  use constant EXPIRATION_YEAR  => 0;
+  use constant EXPIRATION_MONTH => 0;
+  use constant CV_NUMBER        => 0;  # security code
+
+  my $soap = CyberSource::SOAP::Lite->new(
+      merchant_id             => MERCHANT_ID,
+      transaction_key         => TRANSACTION_KEY,
+      merchant_reference_code => 123456,               # fix this
+      cybs_host               => 'ics2wstest.ic3.com', # for test
+      #logging                 => sub { print @_ }
+  );
+
+  $soap->append_field(billTo => {
+      firstName  => '桂',
+      lastName   => '岩佐',
+      postalCode => '150-0002',
+      street1    => '渋谷区渋谷3-1-11',
+      street2    => '',
+      city       => '',
+      state      => '東京都',
+      country    => 'jp',
+      email      => 'test@example.com',
+      ipAddress  => '11.22.33.44'
+  });
+
+  $soap->append_field(shipTo => {
+      firstName  => '桂',
+      lastName   => '岩佐',
+      postalCode => '150-0002',
+      street1    => '渋谷区渋谷3-1-11',
+      street2    => '',
+      city       => '',
+      state      => '東京都',
+      country    => 'jp',
+  });
+
+  $soap->append_field(card => {
+      accountNumber   => ACCOUNT_NUMBER,
+      expirationYear  => EXPIRATION_YEAR,
+      expirationMonth => EXPIRATION_MONTH,
+      cvNumber        => CV_NUMBER,
+  });
+
+  $soap->append_items(map {
+      my $q = int(rand 5) + 1;
+      {
+          productName => sprintf('test%03d', $q),
+          quantity    => $q,
+          unitPrice   => 525 * $q
+      };
+  } (1 .. 3));
+
+  $soap->checkout(sub {
+      my $reply = shift;
+  });
+
 
 =head1 DESCRIPTION
 
-CyberSource::SOAP::Lite is
+CyberSource::SOAP::Lite is yet another CyberSource's SOAP API.
 
 =head1 AUTHOR
 
