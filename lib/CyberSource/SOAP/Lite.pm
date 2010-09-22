@@ -5,7 +5,7 @@ use utf8;
 
 use SOAP::Lite;
 
-our $VERSION = '0.02.1';
+our $VERSION = '0.02.2';
 
 has logging         => ( is => 'rw', isa => 'CodeRef' );
 
@@ -166,7 +166,8 @@ sub checkout {
 sub extract_and_add {
     my $self  = shift;
     my $field = shift or return;
-    $self->add_field( $field->make );
+    my $key = $field->node;
+    $self->add_field( $key, $field->make );
 }
 
 sub add_field {
@@ -206,7 +207,7 @@ sub append_items {
     $self->add_item($klass->new($_)) for @_;
 }
 
-__PACKAGE__->meta->make_immutable;
+1;
 __END__
 
 =head1 NAME

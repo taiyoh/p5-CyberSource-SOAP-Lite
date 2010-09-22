@@ -17,9 +17,8 @@ no Any::Moose;
 
 sub make {
     my $self = shift;
-    my $node = $self->node;
     my @items = map { SOAP::Data->name($_ => $self->$_) } $self->keys;
-    return ($node, \@items);
+    return \@items;
 }
 
 1;

@@ -19,11 +19,11 @@ do {
     around make => sub {
         my $orig = shift;
         my $self = shift;
-        my ($key, $val) = $orig->($self);
+        my $val = $orig->($self);
         for (qw/firstCanna lastCanna/) {
             push @$val, SOAP::Data->name($_ => $self->$_);
         }
-        return ($key, $val);
+        return $val;
     };
 };
 

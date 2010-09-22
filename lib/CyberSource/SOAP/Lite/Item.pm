@@ -9,7 +9,7 @@ my @keys = qw/unitPrice quantity productName/;
 has '+keys' => ( default => sub { [@keys] } );
 has '+node' => ( default => sub { 'item' } );
 
-has item_id   => (
+has item_id => (
     is => 'rw', isa => 'Str', lazy => 1,
     default => sub { $counter++ }
 );
@@ -22,7 +22,7 @@ no Any::Moose;
 sub make {
     my $self  = shift;
     my @value = map { SOAP::Data->name($_ => $self->$_) } @keys;
-    return ( item => \@value, { ' id' => $self->item_id } );
+    return ( \@value, { ' id' => $self->item_id } );
 }
 
 __PACKAGE__->meta->make_immutable;
