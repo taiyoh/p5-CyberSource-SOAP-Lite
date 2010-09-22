@@ -62,6 +62,18 @@ use constant EXPIRATION_YEAR  => 0;
 use constant EXPIRATION_MONTH => 0;
 use constant CV_NUMBER        => 0; # security code
 
+if (!MERCHANT_ID || !TRANSACTION_KEY) {
+    diag "not exists initialize parameter. skip";
+    done_testing;
+    exit;
+}
+
+if (!ACCOUNT_NUMBER || !EXPIRATION_YEAR || !EXPIRATION_MONTH || !CV_NUMBER) {
+    diag "not exists card parameter. skip";
+    done_testing;
+    exit;
+}
+
 my $soap = CyberSource::SOAP::Lite->new(
     merchant_id             => MERCHANT_ID,
     transaction_key         => TRANSACTION_KEY,

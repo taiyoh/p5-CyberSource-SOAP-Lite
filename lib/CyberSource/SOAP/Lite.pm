@@ -5,7 +5,7 @@ use utf8;
 
 use SOAP::Lite;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has logging         => ( is => 'rw', isa => 'CodeRef' );
 
@@ -96,12 +96,16 @@ for my $p (qw/billTo shipTo purchaseTotals card/) {
 
 has items => (
     is   => 'rw',
-    isa  => 'ArrayRef[CyberSource::SOAP::Lite::Item]',
+    isa  => 'ArrayRef',
     lazy => 1,
     default => sub { [] }
 );
 
 has response => ( is => 'rw', isa => 'Any', );
+
+has clientLibrary        => ( is => 'rw', isa  => 'Str', default => 'Perl' );
+has clientLibraryVersion => ( is => 'rw', isa  => 'Str', default => "$]" );
+has clientEnvironment    => ( is => 'rw', isa  => 'Str', default => "$^O" );
 
 no Any::Moose;
 
@@ -117,21 +121,22 @@ sub make_request {
 
     $self->add_field( merchantID => $self->merchant_id );
     $self->add_field( merchantReferenceCode => $self->merchant_reference_code );
-    $self->add_field( clientLibrary => 'Perl' );
-    $self->add_field( clientLibraryVersion => "$]" );
-    $self->add_field( clientEnvironment => "$^O" );
+
+    $self->add_field( $_ => $self->$_ )
+        for (qw/clientLibrary clientLibraryVersion clientEnvironment/);
 
     # billTo
-    $self->add_field( $self->billTo->make ) if $self->billTo;
+    $self->extract_and_add( $self->billTo );
     # shipTo
-    $self->add_field( $self->shipTo->make ) if $self->shipTo;
+    $self->extract_and_add( $self->shipTo );
 
     # item
-    $self->add_field( $_->make ) for @{ $self->items };
+    $self->extract_and_add( $_ ) for @{ $self->items };
     # purchaseTotals
-    $self->add_field($self->purchaseTotals->make) if $self->purchaseTotals;
+    $self->extract_and_add( $self->purchaseTotals );
     # card
-    $self->add_field($self->card->make) if $self->card;
+    $self->extract_and_add( $self->card );
+
     # ccAuthService
     $self->add_field( ccAuthService => [], { run => 'true' } );
 
@@ -158,6 +163,12 @@ sub checkout {
     return $self;
 }
 
+sub extract_and_add {
+    my $self  = shift;
+    my $field = shift or return;
+    $self->add_field( $field->make );
+}
+
 sub add_field {
     my $self = shift;
     my ($key, $val, $attr) = @_;
@@ -176,17 +187,20 @@ sub add_field {
 
 sub append_field($$) {
     my $self = shift;
-    my ($key, $data) = @_;
-    my $cls = ucfirst($key);
-    my $klass = "CyberSource::SOAP::Lite::${cls}";
+    my ($klass, $data) = @_;
+    unless ($klass =~ s{^\+}{}) {
+        $klass = 'CyberSource::SOAP::Lite::' . ucfirst($klass);
+    }
     Any::Moose::load_class($klass)
           unless Any::Moose::is_class_loaded($klass);
-    $self->$key($klass->new($data));
+    my $module = $klass->new($data);
+    my $key = $module->node;
+    $self->$key($module);
 }
 
-sub append_items(@) {
+sub append_items {
     my $self = shift;
-    my $klass = "CyberSource::SOAP::Lite::Item";
+    my $klass = !ref($_[0]) ? shift(@_) : 'CyberSource::SOAP::Lite::Item';
     Any::Moose::load_class($klass)
           unless Any::Moose::is_class_loaded($klass);
     $self->add_item($klass->new($_)) for @_;

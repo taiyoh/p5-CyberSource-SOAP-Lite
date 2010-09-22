@@ -9,8 +9,7 @@ my @keys = qw/
     state postalCode country
     email ipAddress
 /;
-# city
-# phoneNumber
+
 
 has '+keys' => ( default => sub { [@keys]} );
 has '+node' => ( default => sub { 'billTo' } );
